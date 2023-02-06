@@ -1,4 +1,3 @@
-
 // install express
 // install nodemon
 // install cors
@@ -6,6 +5,11 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const User = require("./models/User");
+require("dotenv").config();
+const bcryptSalt = bcrypt.genSaltSync(10);
 
 // testing
 // app.get("/test", (req, res) => {
@@ -18,19 +22,54 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: "http://127.0.0.1:5173",
+    origin: "http://127.0.0.1:5173", // front end port
   })
 );
+
+// connect to mongodb
+mongoose.connect(process.env.MONGO_URL);
+// console.log(process.env.MONGO_URL);
 
 // defining "register" endpoint
 app.post("/register", async (req, res) => {
   // grab the data
   const { name, email, password } = req.body;
-  if (!req.body) {
-    return res.status(400).json({ error: "no data provided" });
+  // check if the user already exist
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(422).json({ error: "Email already exists" });
   }
-  // response
-  res.json({ name, email, password });
+
+  // create the new user
+  try {
+    const UserDoc = await User.create({
+      // pass the information
+      name,
+      email,
+      // encrypt the password
+      password: bcrypt.hashSync(password, bcryptSalt),
+    });
+    // response with new user information
+    res.json(UserDoc);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create user" });
+  }
+  // res.json({ name, email, password });
+});
+
+// defining the login
+app.post("/login", async (req, res) => {
+  // grab from the request body
+  const { email, password } = req.body;
+  // find user with stored email from register page
+  const UserDoc = await User.findOne({ email });
+
+  if (UserDoc) {
+    const passOk = bcrypt.compareSync(password, UserDoc.password);
+    passOk ? res.json("pass ok") : res.status(422).json("pass not ok");
+  } else {
+    res.json("not found");
+  }
 });
 
 // listener
