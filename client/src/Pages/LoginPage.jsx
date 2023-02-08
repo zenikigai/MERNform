@@ -10,7 +10,7 @@ export default function LoginPage() {
     // const email = ""; // get email value
     // const password = ""; // get password value
     try {
-      const response = await fetch("127.0.0.1:4500/login", {
+      const response = await fetch("http://127.0.0.1:4500/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -19,7 +19,7 @@ export default function LoginPage() {
         }),
       });
       const data = await response.json();
-      console.log(data);
+      console.table(data);
     } catch (err) {
       alert(`login failed: ${err.message}`);
     }
