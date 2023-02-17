@@ -1,6 +1,6 @@
 # Fullstack (MERN) form
 
-This is the simplest fullstack (MERN) project for beginner like me.
+This is the simplest fullstack (MERN) project for beginner.
 
 ## Technologies used
 * [Vite + React](https://vitejs.dev/guide/)
